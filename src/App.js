@@ -1,5 +1,7 @@
+import ListContainer from "./ListContainer";
+
 function App() {
-  return <div>Hello World</div>;
+  return <ListContainer />;
 }
 
 export default App;
