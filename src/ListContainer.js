@@ -13,31 +13,44 @@ const colors = [
 ];
 
 export default function ListContainer() {
-  // const [order, setOrder] = useState(colors.map((_, idx) => idx));
-  const [order, setOrder] = useState([6, 1, 3, 2, 0, 7, 4, 5]);
+  const [order, setOrder] = useState(colors.map((_, idx) => idx));
   const [orgPos, setOrgPos] = useState(0);
   const [draggingNode, setDraggingNode] = useState(null);
   const [isMouseDown, setIsMouseDown] = useState(false);
   const [mouseY, setMouseY] = useState(0);
   const [moved, setMoved] = useState(0);
-  const [recent, setRecent] = useState(null);
+  const [recent, setRecent] = useState([]);
 
   const handleTransitionUp = (whole, decimal) => {
-    if (recent === whole || orgPos === order.length - 1) return;
+    if (recent !== [] && recent[0] === whole && recent[1] === 1) return;
 
-    if (decimal > 0.45) {
+    if (decimal > 0.5) {
       const newOrder = [...order];
       const idx = order.findIndex((ele) => ele === draggingNode);
-      console.log(decimal);
+
+      if (idx === order.length - 1) return;
+
       [newOrder[idx], newOrder[idx + 1]] = [newOrder[idx + 1], newOrder[idx]];
       setOrder(newOrder);
 
-      setRecent(whole);
+      setRecent([whole, 1]);
     }
   };
 
   const handleTransitionDown = (whole, decimal) => {
-    console.log("Down");
+    if (recent !== [] && recent[0] === whole && recent[1] === 0) return;
+
+    if (decimal > 0.5) {
+      const newOrder = [...order];
+      const idx = order.findIndex((ele) => ele === draggingNode);
+
+      if (idx === 0) return;
+
+      [newOrder[idx], newOrder[idx - 1]] = [newOrder[idx - 1], newOrder[idx]];
+      setOrder(newOrder);
+
+      setRecent([whole, 0]);
+    }
   };
 
   const handleMouseDown = (e) => {
@@ -53,8 +66,7 @@ export default function ListContainer() {
     setDraggingNode(null);
     setIsMouseDown(false);
     setMoved(0);
-    setRecent(null);
-    setOrgPos(0);
+    setRecent([]);
   };
 
   const handleMouseMove = (e) => {
@@ -68,12 +80,15 @@ export default function ListContainer() {
     if (ratio > 0) {
       whole = Math.floor(ratio);
       decimal = ratio - whole;
+    } else {
+      whole = Math.floor(Math.abs(ratio));
+      decimal = Math.abs(ratio) - whole;
     }
 
     if (currentMoved > moved) {
       handleTransitionUp(whole, decimal);
     } else if (currentMoved < moved) {
-      handleTransitionDown(decimal);
+      handleTransitionDown(whole, decimal);
     }
 
     setMoved(currentMoved);
